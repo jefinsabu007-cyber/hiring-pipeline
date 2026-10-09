@@ -1,0 +1,26 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes: [mongo-data:/data/db]
+  backend:
+    build: ./backend
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongo:27017/hiring
+      # set these in a .env file next to this compose file
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (32+ random characters) in .env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET:-}
+      RECRUITER_EMAIL_DOMAINS: ${RECRUITER_EMAIL_DOMAINS:-}
+    depends_on: [mongo]
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        VITE_RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY:-}
+    ports: ["8080:80"]
+    depends_on: [backend]
+volumes:
+  mongo-data:
